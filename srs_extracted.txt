@@ -1,0 +1,2472 @@
+markdown
+
+# IPAK Data Pulse — Complete System Documentation (Node.js + PostgreSQL Edition)
+## Document Information
+| Field | Value |
+| :--- | :--- |
+| **Application Name** | IPAK Data Pulse |
+| **Subtitle** | Enterprise Production Management Platform |
+| **Developer** | Umair Ahmed Khan |
+| **Backend Stack** | Node.js + Express.js + PostgreSQL + Prisma ORM |
+| **Frontend Stack** | Flutter (Web, iOS, Android) — (React 18 + Vite optional for We
+b) |
+| **UI/UX Philosophy** | Premium Minimalism + Glassmorphism + Neumorphism (Inspired b
+y Stripe & Apple) |
+| **Charts Library** | Apache ECharts (Flutter: `flutter_echarts` / React: `echarts-f
+or-react`) |
+| **Authentication** | JWT (Access + Refresh Tokens) with HttpOnly Cookies |
+| **Document Version** | 2.0 (Node.js/PostgreSQL Complete Edition) |
+| **Last Updated** | 2026-07-25 |
+--## Table of Contents
+1. Executive Summary
+2. Project Overview
+3. Purpose
+4. Objectives
+5. Scope
+6. Business Requirements
+7. Functional Requirements
+8. Non-Functional Requirements
+9. User Roles and Permissions
+10. Complete Module List
+11. Every Screen (Purpose / Fields / Buttons / Validations / Business Logic / Calcula
+tions / Navigation)
+12. Complete Dashboard Documentation
+13. Reports Documentation
+
+14. Masters Documentation
+15. Database Documentation (PostgreSQL Schema + Prisma)
+16. API Documentation (Node.js + Express Endpoints)
+17. Complete Application Workflow
+18. Production Flow
+19. Data Entry Flow
+20. Approval Flow
+21. User Journey
+22. Error Handling
+23. Security Features
+24. Audit Logs
+25. Notifications
+26. Calculations and Formulas
+27. Filters and Search Logic
+28. Import / Export Features
+29. System Architecture
+30. Folder Structure (Node.js + Flutter)
+31. Dependencies
+32. Configuration
+33. Installation Guide
+34. Deployment Guide (Docker + Nginx)
+35. Backup & Restore (PostgreSQL pg_dump)
+36. Known Limitations
+37. Future Enhancements
+38. Complete Business Rules
+39. Complete Data Flow
+40. Screen-by-Screen User Manual
+41. Administrator Manual
+42. Technical Notes
+43. Assumptions
+44. Appendix (Colors, Charts Mapping, UI Components)
+--## 1. Executive Summary
+IPAK Data Pulse is a **multi-plant enterprise production management platform** built
+for a flexible-film manufacturing group operating four facilities: **IPAK, CPAK, GPAK
+, and PETPAK**. The system captures real-time machine-level production, waste, downti
+
+me, settings, cycles, dispatch, export and packing-cost data; defines shift-wise prod
+uction targets; and presents consolidated KPI dashboards, deep analytics, and granula
+r reports — all served from a **Node.js + PostgreSQL backend** with a **premium, Stri
+pe/Apple-inspired UI** on Flutter (Web/iOS/Android) or React.
+**Key Characteristics:**
+- **Multi-plant, single-tenant** — User selects an active plant on login; all data en
+try, dashboards, analytics, and reports are scoped to that plant (Packing Cost is the
+only all-plants module).
+- **Role-based access** — Four roles (Admin, Supervisor, Manager, Operator) gate ever
+y navigation item and CRUD action.
+- **Per-plant theming** — Each plant carries its own accent color, light/dark shades,
+and gradient, applied consistently across the sidebar, top bar, buttons, chips, chart
+s, and KPI cards.
+- **Premium analytics** — ECharts-based charting with diverse visualizations: donut,
+gauge, radial, treemap, sunburst, heatmap, stacked area, grouped bars, scatter plots,
+and histograms.
+- **Bulk import** — CSV/Excel import modal validates and persists Production Entries
+and Film Codes via backend APIs.
+- **Dispatch intelligence** — Dedicated Dispatch entity with entry and report pages b
+reaking down Export vs Local shipments by customer and date.
+--## 2. Project Overview
+IPAK Data Pulse is a **Flutter (Web/iOS/Android)** application served by a **Node.js
++ PostgreSQL** backend. The frontend uses **Flutter** for a premium, smooth UI with a
+nimations and native performance. The backend uses **Express.js** for REST APIs, **Pr
+isma** as ORM, **PostgreSQL** as database, **JWT + Refresh Tokens** for authenticatio
+n, and **Multer** for file uploads.
+**User Experience Flow:**
+1. **Login** — Email + Password (JWT access + refresh tokens issued).
+2. **Plant Selection** — Choose IPAK / CPAK / GPAK / PETPAK; stored in device local s
+torage.
+
+3. **Layout Shell** — Premium collapsible sidebar (desktop) / bottom navigation (mobi
+le), top bar showing active plant badge, current date, and user avatar.
+4. **Module Pages** — Dashboard, Production Entry, Targets, Reports, Analytics, Expor
+t Quantity, Packing Cost, Dispatch, Dispatch Report, Masters, User Management, Permis
+sions, Audit Logs.
+--## 3. Purpose
+To provide plant management, supervisors, and operators a single, real-time, consiste
+nt source of truth for production performance across all four manufacturing facilitie
+s — replacing manual spreadsheets and siloed records with a centralized, auditable, a
+nalytics-driven platform.
+--## 4. Objectives
+- Record per-shift production, waste, downtime, settings, and cycles for every machin
+e in every section of every plant.
+- Define and track shift-wise production targets for Slitter machines.
+- Capture dispatch (export and local) quantities and break them down by customer and
+date.
+- Track export shipment quantities and monthly packing costs across all plants.
+- Deliver instant KPI summaries (This Month and Yesterday) per section and per dispat
+ch type.
+- Deliver deep, machine-level and section-level analytics.
+- Enforce role-based access and plant-scoped data isolation.
+- Allow admin-controlled user creation with role, plant, section, and module access a
+ssignment.
+- Provide bulk data import for high-volume historical data.
+--## 5. Scope
+### In Scope (Implemented):
+- Authentication (login, plant selection, protected routes, JWT refresh).
+
+- Production entry CRUD + bulk import.
+- Target definition and achievement tracking (Slitter, per shift).
+- Reports across 8 types with filters and deep-linking from the dashboard.
+- Analytics across 9 tabs with diverse chart types (pie, donut, gauge, radial, treema
+p, sunburst, heatmap, stacked area).
+- Export Quantity module (per-plant + all-plants comparison).
+- Packing Cost module (all-plants, with Excel/PDF export).
+- Dispatch entry + Dispatch Report (customer/date breakdowns, filters, analytics).
+- Masters (Film Codes, Downtime Reasons, Machines) with bulk import for films.
+- User Management (Add New User via invite + role/access assignment).
+- Permissions editor (plant / section / module).
+- Audit Logs (read-only).
+- Multi-plant context with persistent selection and per-plant theming.
+### Out of Scope (Not Implemented):
+- Multi-step approval workflows (no approval states exist).
+- Email/SMS notifications (Nodemailer integration available but not wired).
+- Realtime WebSocket subscriptions.
+- Workflows / scheduled jobs.
+- Custom backend functions (beyond standard CRUD).
+- Admin-set passwords (users set via secure invite link).
+--## 6. Business Requirements
+| ID | Requirement |
+|----|-------------|
+| BR-01 | The system must support four plants: IPAK, CPAK, GPAK, PETPAK, each with a
+distinct brand color. |
+| BR-02 | Each production record belongs to one plant, one section (Film Line / Slitt
+er / Metallizer), one machine, one shift (Morning/Evening/Night), one film code, and
+one date. |
+| BR-03 | Waste percentage is auto-calculated as `(waste / production) * 100`. |
+| BR-04 | Downtime reason is mandatory when downtime minutes > 0. |
+| BR-05 | Slitter entries require Number of Settings; Metallizer entries may record N
+umber of Cycles. |
+| BR-06 | Targets are shift-wise and apply to Slitter machines only; achievement is c
+omputed live from production entries. |
+
+| BR-07 | Dispatch records classify each shipment as Export or Local and may record a
+customer name. |
+| BR-08 | Packing cost is captured monthly per plant with BOM and Actual cost totals;
+per-ton cost is auto-derived. |
+| BR-09 | Only Admins manage Masters, Users, Permissions, and Audit Logs. |
+| BR-10 | Supervisors/Managers can add/edit records in Production, Export, Packing, D
+ispatch; only Admins/Managers can delete. |
+| BR-11 | Operators can only enter production, targets, export, packing, and dispatch
+— not analytics or reports. |
+| BR-12 | Dashboard cards deep-link to Reports / Dispatch Report with pre-applied fil
+ters. |
+| BR-13 | The active plant selection persists across sessions via localStorage/shared
+_preferences. |
+--## 7. Functional Requirements
+| ID | Requirement |
+|----|-------------|
+| FR-01 | User logs in with email + password; JWT access + refresh tokens issued. |
+| FR-02 | User selects a plant; system stores `id, name` in local storage and derives
+the plant config. |
+| FR-03 | Production Entry: create, edit, delete, bulk import. |
+| FR-04 | Production Entry form validates date, shift, machine, film code, production
+≥ 0, waste ≥ 0, downtime reason required when downtime > 0, settings required for Sli
+tter. |
+| FR-05 | Targets: create, edit, delete; live achievement % column. |
+| FR-06 | Reports: 8 report types, filters (section, machine, shift, date range), top
+-4 downtime reasons. |
+| FR-07 | Analytics: 9 tabs; combined + per-machine Slitter breakdowns; section toggl
+e; target-vs-actual. |
+| FR-08 | Export Quantity: CRUD (role-gated), KPI, daily chart, film-wise chart, allplants comparison. |
+| FR-09 | Packing Cost: CRUD, search/filter/sort, group-total summary, 4 analytics ch
+arts, Excel + PDF export. |
+| FR-10 | Dispatch: CRUD (role-gated). |
+| FR-11 | Dispatch Report: filters, 5 KPI cards, 4 analytics charts, customer-wise +
+date-wise tables. |
+
+| FR-12 | Masters: CRUD + status toggle + bulk import for Film Codes; CRUD + toggle f
+or Downtime Reasons and Machines. |
+| FR-13 | User Management: add (invite + role/access assignment), edit, delete, activ
+ate/deactivate. |
+| FR-14 | Permissions: per-user plant / section / module assignment (UI-managed). |
+| FR-15 | Audit Logs: read-only list (last 100). |
+| FR-16 | Dashboard: per-section KPI rows (This Month, Yesterday) + dispatch KPIs; al
+l cards navigate. |
+--## 8. Non-Functional Requirements
+| ID | Requirement |
+|----|-------------|
+| NFR-01 | **Performance** — API responses < 500ms for CRUD, < 2s for heavy reports/a
+nalytics (with proper indexes). |
+| NFR-02 | **Responsiveness** — Flutter app works on Web, iOS, Android with adaptive
+layouts. |
+| NFR-03 | **Usability** — Premium UI with glassmorphism, neumorphism, smooth animati
+ons, and consistent design language (Stripe/Apple-inspired). |
+| NFR-04 | **Availability** — Deployed on Docker + Nginx on Linux VPS with auto-resta
+rt policies. |
+| NFR-05 | **Security** — JWT with refresh tokens, bcrypt password hashing, Helmet.js
+, CORS, rate limiting, SQL injection prevention via Prisma. |
+| NFR-06 | **Maintainability** — Modular Node.js backend (controllers, services, rout
+es), Flutter frontend with clean architecture. |
+| NFR-07 | **Scalability** — PostgreSQL with proper indexes; can scale to millions of
+records with partitioning. |
+| NFR-08 | **Browser support** — Latest Chrome, Firefox, Safari, Edge. |
+--## 9. User Roles and Permissions
+| Role | Permissions |
+|------|-------------|
+| **Admin** | Full access: All modules, User Management, Permissions, Audit Logs, Mas
+ters. |
+
+| **Supervisor** | Dashboard, Production Entry, Targets, Reports, Analytics, Export Q
+uantity, Packing Cost, Dispatch, Dispatch Report. Cannot delete Production/Export/Pac
+king/Dispatch (only Admins/Managers can delete). |
+| **Manager** | Same as Supervisor + can delete Production, Export, Packing, Dispatch
+. |
+| **Operator** | Dashboard, Production Entry, Targets, Export Quantity, Packing Cost,
+Dispatch, Dispatch Report. Cannot view Reports or Analytics. |
+**Navigation Items & Permitted Roles:**
+| Path | Label | Roles |
+|------|-------|-------|
+| /dashboard | Dashboard | All |
+| /production | Production Entry | Admin, Supervisor, Operator |
+| /targets | Targets | Admin, Supervisor, Manager, Operator |
+| /reports | Reports | Admin, Supervisor, Manager |
+| /analytics | Analytics | Admin, Supervisor, Manager |
+| /export-quantity | Export Quantity | Admin, Supervisor, Manager, Operator |
+| /packing-cost | Packing Cost | Admin, Supervisor, Manager, Operator |
+| /dispatch | Dispatch | Admin, Supervisor, Manager, Operator |
+| /dispatch-report | Dispatch Report | Admin, Supervisor, Manager, Operator |
+| /masters | Masters | Admin |
+| /users | Users | Admin |
+| /permissions | Permissions | Admin |
+| /audit-logs | Audit Logs | Admin |
+--## 10. Complete Module List
+| # | Module | Route | Primary Entity | Roles |
+|---|--------|-------|----------------|-------|
+| 1 | Login | /login | User | All |
+| 2 | Plant Selection | /select-plant | Plant | All authenticated |
+| 3 | Dashboard | /dashboard | ProductionEntry, Dispatch | All |
+| 4 | Production Entry | /production | ProductionEntry | Admin, Supervisor, Operator
+|
+| 5 | Targets | /targets | Target, ProductionEntry | Admin, Supervisor, Manager, Oper
+ator |
+
+| 6 | Reports | /reports | ProductionEntry, Target | Admin, Supervisor, Manager |
+| 7 | Analytics | /analytics | ProductionEntry, Target | Admin, Supervisor, Manager |
+| 8 | Export Quantity | /export-quantity | ExportQuantity, FilmCode | Admin, Supervis
+or, Manager, Operator |
+| 9 | Packing Cost | /packing-cost | PackingCost | Admin, Supervisor, Manager, Operat
+or |
+| 10 | Dispatch | /dispatch | Dispatch | Admin, Supervisor, Manager, Operator |
+| 11 | Dispatch Report | /dispatch-report | Dispatch | Admin, Supervisor, Manager, Op
+erator |
+| 12 | Masters | /masters | FilmCode, DowntimeReason, Machine | Admin |
+| 13 | User Management | /users | User | Admin |
+| 14 | Permissions | /permissions | User | Admin |
+| 15 | Audit Logs | /audit-logs | AuditLog | Admin |
+--## 11. Every Screen
+### 11.1 Login (`/login`)
+- **Purpose:** Authenticate user.
+- **Fields:** Email (text), Password (text, toggleable show/hide).
+- **Buttons:** Sign In (submit, disabled while empty/loading), password show/hide tog
+gle, "Forgot Password?" link.
+- **Validations:** Both fields required; email format validation.
+- **Business Logic:** On submit, frontend calls `POST /api/auth/login`. Backend valid
+ates credentials via Prisma, compares bcrypt hash, issues JWT access + refresh tokens
+stored in HttpOnly cookies. On success, navigates to `/select-plant` or `/dashboard`.
+On failure, shows "Invalid email or password.".
+- **UI:** Glassmorphism card centered on screen, Apple-style inputs with floating lab
+els, haptic feedback on mobile.
+### 11.2 Plant Selection (`/select-plant`)
+- **Purpose:** Choose active plant.
+- **Fields:** Four plant cards (IPAK, CPAK, GPAK, PETPAK) with gradients and icons.
+- **Buttons:** Each plant card; "Sign out".
+- **Validations:** None.
+- **Business Logic:** Selecting a plant calls `switchPlant({id, name})` (writes local
+Storage/shared_preferences) then navigates to `/dashboard`. Sign out clears tokens an
+d navigates to `/login`.
+
+- **UI:** Premium cards with glass effect, smooth hover/scale animations, plant logos
+with gradient overlays.
+### 11.3 Dashboard (`/dashboard`)
+- **Purpose:** Instant KPI overview per section and dispatch, deep-linking into repor
+ts.
+- **Fields:** None (read-only).
+- **Buttons / Cards:** `KPICard` (clickable) × 4 sections × 2 rows (This Month, Yeste
+rday), plus a Dispatch dashboard with 3 cards × 2 rows.
+- **Validations:** None.
+- **Business Logic:** Fetches `GET /api/dashboard/kpis?plant={plant}`. For each secti
+on ('Film Line', 'Slitter', 'Metallizer'), computes This Month (1st-of-month → today)
+and Yesterday metrics: production tons, waste tons, waste %, downtime minutes → hours
+, settings (Slitter) or cycles (Metallizer). Dispatch dashboard computes This Month a
+nd Yesterday totals, plus Export and Local splits. Each card navigates to `/reports?r
+eportType=...&section=...&dateFrom=...&dateTo=...` (production) or `/dispatch-report?
+view=report&dateFrom=...&dateTo=...&dispatchType=...` (dispatch).
+- **UI:** Glassmorphism cards with subtle gradient borders; clickable cards with ripp
+le effect. KPI values in large, bold typography.
+### 11.4 Production Entry (`/production`)
+- **Purpose:** Create/edit/delete per-shift production records; bulk import.
+- **Fields (form):** Date (date picker), Shift (Morning/Evening/Night chip buttons),
+Machine (chip grid), Film Code (searchable dropdown), Production (Tons numeric input)
+, Waste (Tons numeric input), Waste % (auto-calculated read-only), Downtime (Minutes
+numeric), Downtime Reason (dropdown conditional), Number of Settings (Slitter only),
+Number of Cycles (Metallizer only).
+- **Buttons:** "Add Entry", "Bulk Import", per-row Edit/Delete, Save/Cancel.
+- **Validations:** Date required, Shift required, Machine required, Film Code require
+d, Production ≥ 0, Waste ≥ 0, Downtime Reason required when downtime > 0, Settings re
+quired (≥ 0) for Slitter.
+- **Business Logic:** Machine selection auto-sets section. Film code dropdown filters
+by name. On save, builds payload with plant_id/plant_name, parsed numbers, auto waste
+_percent, conditional settings/cycles, `created_by_name`. Calls `POST /api/production
+`. Edit re-opens the form prefilled.
+- **Calculations:** `wastePercent = (wasteTons / productionTons) * 100` (2 dp) — comp
+uted on backend before save.
+- **UI:** Premium form with floating labels, chip selectors, animated transitions. Bu
+lk Import modal with file dropzone.
+
+### 11.5 Targets (`/targets`)
+- **Purpose:** Define shift-wise production targets for Slitter machines and view liv
+e achievement.
+- **Fields (form):** Date, Shift (3 buttons), Slitter Machine (select), Target (Tons)
+.
+- **Buttons:** "Set Target", per-row Edit/Delete, Save/Cancel.
+- **Validations:** All fields required.
+- **Business Logic:** Achievement = actual production (matching date + machine + shif
+t) / target × 100. Calls `GET /api/targets` and `POST/PUT/DELETE /api/targets`.
+- **Calculations:** Achievement computed via SQL join on backend.
+- **UI:** Achievement bars with gradient fill, target vs actual comparison. Clean dat
+a table with pagination.
+### 11.6 Reports (`/reports`)
+- **Purpose:** Tabular reports across 8 types with filters; top-4 downtime reasons.
+- **Fields (filters):** Section, Machine, Shift, Date From, Date To.
+- **Buttons:** Report-type tabs, Export (decorative), Clear filters.
+- **Validations:** None (read-only).
+- **Business Logic:** Applies URL params from dashboard deep-links (`reportType`, `se
+ction`, `dateFrom`, `dateTo`). Fetches `GET /api/reports/{type}?plant={plant}&...`. S
+witches on report type: Overall Production, Film-wise Production, Machine-wise Produc
+tion, Waste, Downtime, Target, Settings, Cycles.
+- **UI:** Data tables with sticky headers, sortable columns, row striping. Top-4 reas
+ons card with horizontal bars.
+### 11.7 Analytics (`/analytics`)
+- **Purpose:** Premium, interactive analytics across 9 tabs with diverse charts.
+- **Tabs:** Production, Production vs Waste, Waste, Downtime, Target vs Actual, Filmwise Production, Machine-wise Production, Slitter Settings, Metallizer Cycles.
+- **Section toggle:** Film Line / Slitter / Metallizer (applies to section-based tabs
+).
+- **Buttons:** Tab chips, section toggle.
+- **Validations:** None.
+- **Business Logic & Calculations:** Fetches `GET /api/analytics/{tab}?plant={plant}&
+section={section}`. Backend aggregates data and returns JSON formatted for ECharts.
+- **Charts Mapping:**
+- **Production:** Stacked Area Chart (date × machine)
+- **Production vs Waste:** Dual Area Chart (two Y-axes)
+
+- **Waste:** Donut + Treemap (film-wise breakdown)
+- **Downtime:** Heatmap (date × reason) + Gauge (total downtime %)
+- **Target vs Actual:** Grouped Bar + Radial Gauge (achievement % per machine)
+- **Film-wise:** Sunburst + Pie
+- **Machine-wise:** Bar Chart Race (animated)
+- **Slitter Settings:** Scatter Plot (settings vs production)
+- **Metallizer Cycles:** Histogram (cycle distribution)
+- **UI:** Full-screen charts with dark/light mode, interactive tooltips, zoom/pan. Pr
+emium animations on load.
+### 11.8 Export Quantity (`/export-quantity`)
+- **Purpose:** Track daily export shipment quantities, per-plant and all-plants.
+- **Fields (form):** Date, Film Code (select), Export Quantity (Tons).
+- **Buttons:** "Add New Export" (role-gated), per-row Edit/Delete (delete role-gated)
+.
+- **Validations:** Date, film code, quantity required.
+- **Business Logic:** Fetches `GET /api/export-quantity?plant={plant}`. All-plants co
+mparison always visible. Role gates: canAdd = admin/supervisor/manager; canDelete = a
+dmin/manager.
+- **Charts:** Daily trend (Bar), Film-wise (Pie), All-plants comparison (Grouped Bar)
+.
+- **UI:** Clean KPI cards at top, charts in card containers, data table below.
+### 11.9 Packing Cost (`/packing-cost`)
+- **Purpose:** Monthly packing cost across all plants with analytics and Excel/PDF ex
+port.
+- **Fields (form):** Plant (select), Month (month input), Total Production (T), Total
+Cost (Rs), BOM Total Cost (Rs), Actual Total Cost (Rs), BOM Packing Cost (auto), Actu
+al Packing Cost (auto).
+- **Buttons:** Excel, PDF (role-gated), "Add New" (role-gated), per-row Edit/Delete,
+search/sort.
+- **Validations:** All 6 numeric/date fields required (alert).
+- **Business Logic:** All-plants module (not scoped to selected plant). Search filter
+s by plant or month; filter by plant; sort newest/oldest. Summary computes per-plant
+totals plus a Group (Total) row. Excel uses `exceljs`, PDF uses `pdfkit`.
+- **Charts:** Monthly trend (Line), Plant-wise (Donut), BOM vs Actual (Gauge), Cost p
+er ton (Radar).
+- **UI:** Summary cards with gradient backgrounds, export buttons with icons.
+
+### 11.10 Dispatch (`/dispatch`)
+- **Purpose:** Create/edit/delete dispatch records.
+- **Fields (form):** Date, Dispatch Type (Export/Local chips), Customer Name (optiona
+l), Quantity (Tons).
+- **Buttons:** "Add Dispatch" (role-gated), per-row Edit/Delete (role-gated).
+- **Validations:** Date, dispatch type, valid quantity ≥ 0 required.
+- **Business Logic:** Plant-scoped fetch. Role gates: canAdd = admin/supervisor/manag
+er; canDelete = admin/manager.
+- **UI:** Chips for type selection, clean data table.
+### 11.11 Dispatch Report (`/dispatch-report`)
+- **Purpose:** Deep dispatch analytics with customer/date breakdowns.
+- **Fields (filters):** Dispatch Type (All/Export/Local), Date From, Date To, Custome
+r search.
+- **Buttons:** Clear filters.
+- **Validations:** None.
+- **Business Logic:** Reads URL params from dashboard deep-links. Fetches `GET /api/d
+ispatch/report?plant={plant}&...`. Computes: total, export, local, unique customers,
+record count; daily trend (last 30 dates, stacked Export/Local); Export vs Local shar
+e (donut); top-10 customers; customer-wise Export vs Local; customer-wise table with
+totals; date-wise table with totals.
+- **Charts:** Daily stacked bar, Donut (Export/Local share), Top 10 customers (Horizo
+ntal Bar), Customer-wise stacked bar.
+- **UI:** KPI row with metric cards, chart grid, expandable tables.
+### 11.12 Masters (`/masters`)
+- **Purpose:** Manage Film Codes, Downtime Reasons, Machines.
+- **Tabs:** Film Codes, Downtime Reasons, Machines.
+- **Fields:** Film: `film_code_name`; Downtime Reason: `reason_label`; Machine: `mach
+ine_name`, `plant_name` (select), `section` (select).
+- **Buttons:** Tab buttons, "Bulk Import" (Film Codes only), "Add (singular)", per-ro
+w Edit, status toggle (✓).
+- **Validations:** Entity required fields enforced by backend.
+- **Business Logic:** New records default to `status: 'Active'`; toggle flips Active
+⇔ Inactive via `PATCH /api/masters/{entity}/{id}`. Bulk import for Film Codes.
+- **UI:** Clean card-based layout for each tab.
+### 11.13 User Management (`/users`)
+
+- **Purpose:** Create users, assign role + plant/section/module access, edit, delete,
+activate/deactivate.
+- **Fields (form):** Email/Username (create only), Role (admin/supervisor/manager/ope
+rator/user), Plant Access (chips), Section Access (chips), Module Access (checkboxes)
+.
+- **Buttons:** "Add New User", per-row Edit, Delete, status toggle.
+- **Validations:** Email required on create; error surfaced inline.
+- **Business Logic:** On create: `POST /api/users` — backend hashes password (or send
+s invite). On edit: `PUT /api/users/{id}`. Delete: `DELETE /api/users/{id}`. Status t
+oggle: `PATCH /api/users/{id}/status`.
+- **UI:** Modal forms with chip selectors and checkbox grids.
+### 11.14 Permissions (`/permissions`)
+- **Purpose:** Assign plant, section and module access per user.
+- **Fields:** User list (select), Plant Access (chips), Section Access (chips), Modul
+e Access (checkboxes).
+- **Buttons:** "Save Permissions".
+- **Validations:** None.
+- **Business Logic:** Selecting a user loads existing permissions from `GET /api/user
+s/{id}`. Save calls `PUT /api/users/{id}` updating `plants`, `sections`, `modules` JS
+ON fields.
+- **UI:** Clean permission editor with toggles.
+### 11.15 Audit Logs (`/audit-logs`)
+- **Purpose:** Read-only view of the last 100 audit events.
+- **Fields:** None.
+- **Buttons:** None.
+- **Validations:** None.
+- **Business Logic:** Fetches `GET /api/audit-logs?limit=100`. Columns: Timestamp, Us
+er, Action, Module, Details.
+- **UI:** Data table with search and date filter.
+--## 12. Complete Dashboard Documentation
+The Dashboard (`/dashboard`) is composed of three helper components: `KPICard`, `Sect
+ionDashboard`, `DispatchDashboard`.
+
+**Date range helpers:**
+- `buildMonthRange()` → `{dateFrom: YYYY-MM-01, dateTo: today}`
+- `buildYesterdayRange()` → `{dateFrom: yesterday, dateTo: yesterday}`
+**KPICard:** A clickable button-card. Props: `title`, `value`, `unit`, `subtitle`, `c
+olor`, `icon`, `onClick`. Renders an icon tile (`color + '20'` background), the value
+with unit, and subtitle. Hover lifts the card and shows a ring in the accent color.
+**SectionDashboard (per section):** For each of Film Line / Slitter / Metallizer:
+- **This Month row:** Production (T, theme color, → Overall Production report), Waste
+(%, amber, → Waste report), Downtime (hrs, red, → Downtime report), plus Settings (Sl
+itter, purple) or Cycles (Metallizer, purple).
+- **Yesterday row:** Identical metrics scoped to yesterday.
+**DispatchDashboard:**
+- **This Month:** Total Dispatch (theme), Export Dispatch (sky), Local Dispatch (gree
+n).
+- **Yesterday:** Identical three cards scoped to yesterday.
+**Data Load:** `Promise.all([fetch('/api/dashboard/kpis?plant=...'), fetch('/api/dash
+board/dispatch?plant=...')])`.
+--## 13. Reports Documentation
+Reports supports 8 report types. All operate on plant-scoped data. Backend uses SQL a
+ggregates.
+**Report types and columns:**
+| Report | Grouping | Columns |
+|--------|----------|---------|
+| Overall Production | date + machine + film, per section | Date, Machine, Film, Prod
+(T), Waste (T), Waste % |
+| Film-wise Production | date + film | Date, Film, Prod (T), Waste (T), Waste % |
+| Machine-wise Production | machine | Machine, Section, Prod (T) |
+| Waste | date + machine, per section | Date, Machine, Prod (T), Waste (T), Waste % |
+
+| Downtime | entries with downtime > 0, per section | Date, Machine, Downtime (hrs),
+Reason |
+| Target | Slitter targets | Date, Machine, Target (T), Actual (T), Achievement % |
+| Settings | Slitter, date + machine | Date, Machine, Settings |
+| Cycles | Metallizer entries | Date, Machine, Film, Cycles |
+**Top-4 Downtime Reasons:** For Downtime report only, an additional summary card list
+s the 4 reasons with highest total downtime minutes.
+**Waste / Achievement badges:** Waste % badge: red when > 5%, else green. Achievement
+badge: green ≥ 100%, orange otherwise; "N/A" when target ≤ 0.
+--## 14. Masters Documentation
+Masters manages three reference datasets:
+| Tab | Entity | Fields | Special |
+|-----|--------|--------|---------|
+| Film Codes | FilmCode | film_code_name, status, description | Bulk import supported
+|
+| Downtime Reasons | DowntimeReason | reason_label, status | — |
+| Machines | Machine | machine_name, plant_name, section, status | plant + section se
+lects |
+All new records default to `status: 'Active'`. The status toggle flips status via an
+update. There is no delete in Masters — only activate/deactivate and edit.
+--## 15. Database Documentation (PostgreSQL Schema)
+The data layer uses PostgreSQL with Prisma ORM. Below is the complete Prisma schema.
+### Prisma Schema (`prisma/schema.prisma`)
+```prisma
+generator client {
+
+provider = "prisma-client-js"
+}
+datasource db {
+provider = "postgresql"
+url
+
+= env("DATABASE_URL")
+
+}
+model User {
+id
+
+String
+
+@id @default(cuid())
+
+email
+
+String
+
+@unique
+
+password
+
+String
+
+// hashed with bcrypt
+
+fullName
+
+String
+
+@map("full_name")
+
+role
+
+String
+
+@default("operator") // admin, supervisor, manager, operator, us
+
+plants
+
+Json?
+
+@default("[]") // ["IPAK", "CPAK"]
+
+sections
+
+Json?
+
+@default("[]") // ["Film Line", "Slitter"]
+
+modules
+
+Json?
+
+@default("[]") // ["Production", "Reports"]
+
+status
+
+String
+
+@default("Active") // Active, Inactive
+
+er
+
+createdAt DateTime @default(now()) @map("created_date")
+updatedAt DateTime @updatedAt @map("updated_date")
+productionEntries ProductionEntry[]
+targets
+
+Target[]
+
+exportQuantities
+
+ExportQuantity[]
+
+packingCosts
+
+PackingCost[]
+
+dispatches
+
+Dispatch[]
+
+auditLogs
+
+AuditLog[]
+
+@@map("users")
+}
+model Plant {
+id
+
+String
+
+@id @default(cuid())
+
+plantName
+
+String
+
+@unique @map("plant_name")
+
+plantCode
+
+String
+
+@map("plant_code")
+
+themeColor
+
+String
+
+@default("#16a34a") @map("theme_color")
+
+themeName
+
+String
+
+@default("Light Green") @map("theme_name")
+
+status
+
+String
+
+@default("Active")
+
+createdAt
+
+DateTime @default(now()) @map("created_date")
+
+machines
+
+Machine[]
+
+productions
+
+ProductionEntry[]
+
+targets
+
+Target[]
+
+exportQuantities ExportQuantity[]
+packingCosts PackingCost[]
+dispatches
+
+Dispatch[]
+
+@@map("plants")
+}
+model Machine {
+id
+
+String
+
+@id @default(cuid())
+
+machineName String
+
+@map("machine_name")
+
+plantId
+
+String
+
+@map("plant_id")
+
+plantName
+
+String
+
+@map("plant_name")
+
+section
+
+String
+
+// Film Line, Slitter, Metallizer
+
+status
+
+String
+
+@default("Active")
+
+createdAt
+
+DateTime @default(now()) @map("created_date")
+
+plant
+
+Plant
+
+@relation(fields: [plantId], references: [id])
+
+productions ProductionEntry[]
+targets
+
+Target[]
+
+@@map("machines")
+}
+model FilmCode {
+id
+
+String
+
+@id @default(cuid())
+
+filmCodeName String
+
+@unique @map("film_code_name")
+
+status
+
+String
+
+@default("Active")
+
+description
+
+String?
+
+createdAt
+
+DateTime @default(now()) @map("created_date")
+
+productions
+
+ProductionEntry[]
+
+exportQuantities ExportQuantity[]
+@@map("film_codes")
+
+}
+model DowntimeReason {
+id
+
+String
+
+@id @default(cuid())
+
+reasonLabel
+
+String
+
+@unique @map("reason_label")
+
+status
+
+String
+
+@default("Active")
+
+createdAt
+
+DateTime @default(now()) @map("created_date")
+
+productions
+
+ProductionEntry[]
+
+@@map("downtime_reasons")
+}
+model ProductionEntry {
+id
+
+String
+
+@id @default(cuid())
+
+entryDate
+
+String
+
+@map("entry_date") // YYYY-MM-DD
+
+shift
+
+String
+
+// Morning, Evening, Night
+
+plantId
+
+String
+
+@map("plant_id")
+
+plantName
+
+String
+
+@map("plant_name")
+
+section
+
+String
+
+// Film Line, Slitter, Metallizer
+
+machineId
+
+String
+
+@map("machine_id")
+
+machineName
+
+String
+
+@map("machine_name")
+
+filmCodeId
+
+String
+
+@map("film_code_id")
+
+filmCodeName
+
+String
+
+@map("film_code_name")
+
+productionTons
+
+Float
+
+@map("production_tons")
+
+wasteTons
+
+Float
+
+@map("waste_tons")
+
+wastePercent
+
+Float?
+
+@map("waste_percent")
+
+downtimeMinutes
+
+Float
+
+@default(0) @map("downtime_minutes")
+
+downtimeReasonId
+
+String?
+
+@map("downtime_reason_id")
+
+downtimeReasonLabel String? @map("downtime_reason_label")
+numberOfSettings
+
+Int?
+
+@map("number_of_settings")
+
+numberOfCycles
+
+Int?
+
+@map("number_of_cycles")
+
+createdByName
+
+String?
+
+@map("created_by_name")
+
+createdAt
+
+DateTime @default(now()) @map("created_date")
+
+updatedAt
+
+DateTime @updatedAt @map("updated_date")
+
+plant
+
+Plant
+
+@relation(fields: [plantId], references: [id])
+
+machine
+
+Machine
+
+@relation(fields: [machineId], references: [id])
+
+filmCode
+
+FilmCode
+
+@relation(fields: [filmCodeId], references: [id])
+
+downtimeReason
+
+DowntimeReason? @relation(fields: [downtimeReasonId], references:
+
+[id])
+@@index([plantName, entryDate])
+@@index([section])
+@@map("production_entries")
+}
+model Target {
+id
+
+String
+
+@id @default(cuid())
+
+targetDate
+
+String
+
+@map("target_date") // YYYY-MM-DD
+
+shift
+
+String
+
+// Morning, Evening, Night
+
+plantId
+
+String
+
+@map("plant_id")
+
+plantName
+
+String
+
+@map("plant_name")
+
+machineId
+
+String
+
+@map("machine_id")
+
+machineName
+
+String
+
+@map("machine_name")
+
+dailyTargetTons Float
+
+@map("daily_target_tons")
+
+createdByName
+
+String?
+
+@map("created_by_name")
+
+createdAt
+
+DateTime @default(now()) @map("created_date")
+
+updatedAt
+
+DateTime @updatedAt @map("updated_date")
+
+plant
+
+Plant
+
+@relation(fields: [plantId], references: [id])
+
+machine
+
+Machine
+
+@relation(fields: [machineId], references: [id])
+
+@@map("targets")
+}
+model ExportQuantity {
+id
+
+String
+
+@id @default(cuid())
+
+exportDate
+
+String
+
+@map("export_date") // YYYY-MM-DD
+
+plantId
+
+String
+
+@map("plant_id")
+
+plantName
+
+String
+
+@map("plant_name")
+
+filmCodeId
+
+String
+
+@map("film_code_id")
+
+filmCodeName
+
+String
+
+@map("film_code_name")
+
+exportQuantityTons Float @map("export_quantity_tons")
+createdByName
+
+String?
+
+@map("created_by_name")
+
+createdAt
+
+DateTime @default(now()) @map("created_date")
+
+updatedAt
+
+DateTime @updatedAt @map("updated_date")
+
+plant
+
+Plant
+
+@relation(fields: [plantId], references: [id])
+
+filmCode
+
+FilmCode @relation(fields: [filmCodeId], references: [id])
+
+@@map("export_quantities")
+}
+model PackingCost {
+id
+
+String
+
+@id @default(cuid())
+
+costMonth
+
+String
+
+@map("cost_month") // YYYY-MM
+
+plantId
+
+String
+
+@map("plant_id")
+
+plantName
+
+String
+
+@map("plant_name")
+
+totalProductionTons Float
+
+@map("total_production_tons")
+
+totalCostRs
+
+Float
+
+@map("total_cost_rs")
+
+bomTotalCostRs
+
+Float
+
+@map("bom_total_cost_rs")
+
+actualTotalCostRs
+
+Float
+
+@map("actual_total_cost_rs")
+
+bomPackingCost
+
+Float?
+
+@map("bom_packing_cost")
+
+actualPackingCost
+
+Float?
+
+@map("actual_packing_cost")
+
+createdByName
+
+String?
+
+@map("created_by_name")
+
+createdAt
+
+DateTime @default(now()) @map("created_date")
+
+updatedAt
+
+DateTime @updatedAt @map("updated_date")
+
+plant
+
+Plant
+
+@relation(fields: [plantId], references: [id])
+
+@@map("packing_costs")
+}
+model Dispatch {
+id
+
+String
+
+@id @default(cuid())
+
+dispatchDate
+
+String
+
+@map("dispatch_date") // YYYY-MM-DD
+
+plantId
+
+String
+
+@map("plant_id")
+
+plantName
+
+String
+
+@map("plant_name")
+
+dispatchType
+
+String
+
+@map("dispatch_type") // Export, Local
+
+customerName
+
+String?
+
+@map("customer_name")
+
+quantityTons
+
+Float
+
+@map("quantity_tons")
+
+createdByName
+
+String?
+
+@map("created_by_name")
+
+createdAt
+
+DateTime @default(now()) @map("created_date")
+
+updatedAt
+
+DateTime @updatedAt @map("updated_date")
+
+plant
+
+Plant
+
+@relation(fields: [plantId], references: [id])
+
+@@map("dispatches")
+}
+model AuditLog {
+id
+
+String
+
+@id @default(cuid())
+
+userId
+
+String
+
+@map("user_id")
+
+userName
+
+String?
+
+@map("user_name")
+
+action
+
+String
+
+// CREATE, UPDATE, DELETE, EXPORT, VIEW
+
+module
+
+String
+
+// ProductionEntry, Target, etc.
+
+reportName
+
+String?
+
+@map("report_name")
+
+exportFormat String?
+
+@map("export_format") // PDF, Excel
+
+details
+
+String?
+
+// JSON string of changes
+
+createdAt
+
+DateTime @default(now()) @map("created_date")
+
+user
+
+User
+
+@relation(fields: [userId], references: [id])
+
+@@map("audit_logs")
+}
+
+Indexes for Performance:
+
+
+
+
+
+
+production_entries(plant_name, entry_date)
+production_entries(section)
+targets(plant_name, target_date)
+dispatches(plant_name, dispatch_date)
+export_quantities(plant_name, export_date)
+
+16. API Documentation (Node.js + Express)
+Base URL: https://api.ipak.com/v1
+Authentication Endpoints:
+
+Method
+
+Endpoint
+
+Description
+
+POST
+
+/auth/login
+
+Login → returns access + refresh tokens
+
+POST
+
+/auth/refresh
+
+Refresh access token
+
+POST
+
+/auth/logout
+
+Revoke refresh token
+
+GET
+
+/auth/me
+
+Get current user profile
+
+Production Entry Endpoints:
+Method
+
+Endpoint
+
+GET
+
+/production
+
+POST
+
+/production
+
+Create production entry
+
+PUT
+
+/production/:id
+
+Update production entry
+
+DELETE
+
+/production/:id
+
+Delete production entry
+
+POST
+
+/production/bulk-
+
+Description
+
+List production entries (filters: plant, dateFrom, dateTo, shift, secti
+machine)
+
+Bulk import CSV/Excel
+
+import
+
+Targets Endpoints:
+Method
+
+Endpoint
+
+Description
+
+GET
+
+/targets
+
+List targets with achievement
+
+POST
+
+/targets
+
+Create target
+
+Method
+
+Endpoint
+
+Description
+
+PUT
+
+/targets/:id
+
+Update target
+
+DELETE
+
+/targets/:id
+
+Delete target
+
+Reports Endpoints:
+Method
+
+Endpoint
+
+GET
+
+/reports/:type
+
+Description
+Get report data (type: overall, film-wise, machine-wise, waste, downtime,
+target, settings, cycles)
+
+Analytics Endpoints:
+Method
+
+Endpoint
+
+GET
+
+/analytics/:tab
+
+Description
+
+Get analytics chart data (tab: production, waste, downtime, target-vs-actu
+film-wise, machine-wise, settings, cycles)
+
+Dashboard Endpoints:
+Method
+
+Endpoint
+
+Description
+
+GET
+
+/dashboard/kpis
+
+Get This Month + Yesterday KPIs for all sections
+
+GET
+
+/dashboard/dispatch
+
+Get Dispatch KPIs
+
+Export Quantity, Packing Cost, Dispatch, Masters, Users, Audit
+Logs — similar RESTful patterns.
+
+17. Complete Application Workflow
+1.
+2.
+3.
+4.
+5.
+6.
+7.
+8.
+
+User navigates to app → checks JWT token validity.
+If no token → redirected to /login.
+Login success → JWT stored in HttpOnly cookie → /select-plant or /dashboard.
+Plant selection → stored in localStorage/shared_preferences → plant config
+loaded.
+Sidebar/bottom nav renders role-filtered modules.
+User opens module → API call with plant filter → data rendered.
+CRUD operations → API calls → state updates.
+Dashboard cards → deep-link to Reports/Dispatch Report with URL params.
+
+18. Production Flow
+1. Operator opens Production Entry, picks Date, Shift, Machine (auto-sets section),
+Film Code.
+2. Enters Production, Waste (waste % auto), Downtime + reason, Settings/Cycles.
+3. Save → POST /api/production → backend calculates waste%, validates → stores in
+DB.
+4. Entry immediately feeds Dashboard KPIs, Reports, Analytics, Targets achievement.
+
+19. Data Entry Flow
+Every entry page follows same pattern: List view → Add button → Modal form →
+Validation → API call → Refresh list.
+
+20. Approval Flow
+
+No approval workflow implemented. All entries active immediately on creation.
+
+21. User Journey
+Persona
+Operator
+
+Supervisor
+
+Manager
+Admin
+
+Journey
+Login → Plant Selection → Production Entry (add daily) → Targets (view) → Dispatch (add
+shipments)
+Login → Plant Selection → Dashboard → Production Entry → Targets → Reports → Analytics
+Export/Dispatch
+Login → Plant Selection → Dashboard → Reports → Analytics → Packing Cost (export) →
+Dispatch Report
+All of above + Masters + User Management + Permissions + Audit Logs
+
+22. Error Handling
+
+
+
+
+
+
+Auth errors: 401 → redirect to login; 403 → show "Access Denied" toast.
+Form validation: Inline red messages; form disabled until valid.
+Save failures: Toast notifications (error/success).
+Fetch failures: Empty state with "Retry" button.
+Bulk import: Parse errors shown inline with per-row validation.
+
+23. Security Features
+
+
+
+
+
+
+
+
+
+
+
+Authentication: JWT access (15 min) + refresh token (7 days) stored in HttpOnly
+cookie.
+Password hashing: bcrypt (salt rounds 12).
+Route protection: Middleware verifyToken on all protected routes.
+Role gating: Middleware checkRole on sensitive endpoints.
+Plant scoping: All queries filter by plant_name from user's context.
+SQL injection: Prevented by Prisma ORM.
+Helmet.js: Secure HTTP headers.
+CORS: Whitelisted origins.
+Rate limiting: express-rate-limit (100 requests per minute per IP).
+
+24. Audit Logs
+Middleware auditLog captures every CRUD action:
+javascript
+
+await prisma.auditLog.create({
+data: {
+userId: req.user.id,
+userName: req.user.fullName,
+action: 'CREATE',
+module: 'ProductionEntry',
+details: JSON.stringify({ id: newRecord.id, ... })
+}
+});
+
+25. Notifications
+No email/push notifications wired — Nodemailer integration available but unused.
+
+26. Calculations and Formulas
+#
+
+Metric
+
+Formula
+
+Where
+Production
+Entry
+
+1
+
+Waste %
+
+(waste_tons / production_tons) * 100 (2 dp)
+
+(backend
+before
+save)
+
+2
+
+Downtime
+hours
+
+Dashboard,
+downtime_minutes / 60
+
+Reports,
+Analytics
+Targets,
+
+3
+
+Achievement
+
+(actual_production / daily_target_tons) *
+
+Reports
+
+%
+
+100 (1 dp)
+
+(Target),
+Analytics
+
+BOM
+4
+
+Packing Cost
+
+bom_total_cost_rs / total_production_tons
+
+(Rs/T)
+Actual
+5
+
+Packing Cost
+
+actual_total_cost_rs / total_production_tons
+
+(Rs/T)
+Group
+6
+
+(Total) per-
+
+Cost
+
+Packing
+Cost
+Packing
+
+sum(bom_total) / sum(total_prod)
+
+ton cost
+7
+
+Packing
+
+Cost
+summary
+
+Monthly
+
+sum(bom)/sum(prod) and sum(actual)/sum(prod) pe
+
+Packing
+
+trend Rs/T
+
+r month
+
+Cost
+
+#
+
+8
+
+9
+
+10
+
+11
+
+12
+
+Metric
+Dispatch
+Total
+
+Export /
+Local split
+Unique
+
+Formula
+
+Where
+Dispatch
+Report,
+
+sum(quantity_tons)
+
+Dashboard
+Dispatch
+filter by dispatch_type then sum
+
+Report,
+Dashboard
+
+customers
+
+Set(customer_name.toLowerCase()).size
+
+This Month
+
+sum of entries where entry_date in [month-start,
+
+production
+
+today]
+
+Yesterday
+production
+
+sum of entries where entry_date == yesterday
+
+Dispatch
+Report
+Dashboard
+
+Dashboard
+
+(All 23 formulas from original SRS apply, computed on backend.)
+
+27. Filters and Search Logic
+Module
+Reports
+
+Dispatch Report
+
+Filter Fields
+section, machine, shift,
+dateFrom, dateTo
+dispatchType, dateFrom,
+dateTo, customer
+
+Logic
+Strict equality; date string comparison
+
+Equality / date compare / customer ILIKE
+
+Module
+
+Filter Fields
+
+Packing Cost
+
+search, plant filter, sort
+
+Production Entry
+(film)
+
+filmSearch
+
+Logic
+search matches plant or month (ILIKE); plant
+equality; sort newest/oldest
+name ILIKE, max 20 in dropdown
+
+28. Import / Export Features
+Bulk Import (CSV/Excel):
+
+
+Uses Multer to upload file → xlsx parser extracts rows → backend validates
+→ prisma.productionEntry.createMany().
+
+Export (Packing Cost only):
+
+
+
+Excel: Uses exceljs to generate .xlsx file.
+PDF: Uses pdfkit to generate .pdf file.
+
+29. System Architecture
+text
+
+[Client: Flutter/React Web/Mobile]
+↓ HTTPS
+[API Gateway: Nginx + SSL]
+↓
+[Node.js + Express Server] ← [Redis (caching)]
+↓
+[PostgreSQL Database]
+
+↓
+[File Storage: Local/AWS S3]
+
+30. Folder Structure (Node.js Backend)
+text
+
+backend/
+├── src/
+│
+
+├── config/
+
+│
+
+│
+
+├── database.js
+
+│
+
+│
+
+└── redis.js
+
+│
+
+├── controllers/
+
+│
+
+│
+
+├── authController.js
+
+│
+
+│
+
+├── productionController.js
+
+│
+
+│
+
+├── targetController.js
+
+│
+
+│
+
+├── reportController.js
+
+│
+
+│
+
+├── analyticsController.js
+
+│
+
+│
+
+├── exportController.js
+
+│
+
+│
+
+├── packingController.js
+
+│
+
+│
+
+├── dispatchController.js
+
+│
+
+│
+
+├── masterController.js
+
+│
+
+│
+
+├── userController.js
+
+│
+
+│
+
+└── auditController.js
+
+│
+
+├── services/
+
+│
+
+│
+
+├── productionService.js
+
+│
+
+│
+
+├── reportService.js
+
+│
+
+│
+
+└── analyticsService.js
+
+│
+
+├── middlewares/
+
+│
+
+│
+
+├── auth.js
+
+│
+
+│
+
+├── role.js
+
+│
+
+│
+
+├── auditLog.js
+
+│
+
+│
+
+├── errorHandler.js
+
+│
+
+│
+
+└── rateLimiter.js
+
+│
+
+├── routes/
+
+│
+
+│
+
+├── authRoutes.js
+
+│
+
+│
+
+├── productionRoutes.js
+
+│
+
+│
+
+├── targetRoutes.js
+
+│
+
+│
+
+├── reportRoutes.js
+
+│
+
+│
+
+├── analyticsRoutes.js
+
+│
+
+│
+
+├── exportRoutes.js
+
+│
+
+│
+
+├── packingRoutes.js
+
+│
+
+│
+
+├── dispatchRoutes.js
+
+│
+
+│
+
+├── masterRoutes.js
+
+│
+
+│
+
+├── userRoutes.js
+
+│
+
+│
+
+└── auditRoutes.js
+
+│
+
+├── utils/
+
+│
+
+│
+
+├── validators.js
+
+│
+
+│
+
+├── helpers.js
+
+│
+
+│
+
+└── excelParser.js
+
+│
+
+└── app.js
+
+├── prisma/
+│
+
+└── schema.prisma
+
+├── .env
+├── package.json
+└── server.js
+
+31. Dependencies (Backend)
+json
+
+{
+"express": "^4.18.2",
+"@prisma/client": "^5.0.0",
+"prisma": "^5.0.0",
+"bcrypt": "^5.1.0",
+"jsonwebtoken": "^9.0.0",
+"cors": "^2.8.5",
+"helmet": "^7.0.0",
+"dotenv": "^16.0.3",
+"multer": "^1.4.5-lts.1",
+"xlsx": "^0.18.5",
+"exceljs": "^4.3.0",
+"pdfkit": "^0.13.0",
+
+"express-rate-limit": "^6.7.0",
+"nodemailer": "^6.9.0",
+"redis": "^4.6.0",
+"joi": "^17.9.0"
+}
+
+Frontend (Flutter) Dependencies:
+yaml
+
+dependencies:
+flutter:
+dio: ^5.0.0
+provider: ^6.0.0 (or riverpod)
+shared_preferences: ^2.0.0
+flutter_echarts: ^2.4.0
+fl_chart: ^0.63.0
+go_router: ^10.0.0
+flutter_svg: ^2.0.0
+glassmorphism: ^3.0.0
+
+32. Configuration
+.env file:
+env
+
+NODE_ENV=production
+PORT=5000
+DATABASE_URL="postgresql://user:pass@localhost:5432/ipak_db"
+JWT_SECRET="super-secret-key"
+JWT_REFRESH_SECRET="refresh-secret"
+JWT_EXPIRES_IN="15m"
+JWT_REFRESH_EXPIRES_IN="7d"
+CORS_ORIGIN="https://app.ipak.com"
+REDIS_URL="redis://localhost:6379"
+
+33. Installation Guide
+bash
+
+# 1. Clone repository
+git clone <repo-url>
+cd ipak-data-pulse-backend
+# 2. Install dependencies
+npm install
+# 3. Setup PostgreSQL database
+createdb ipak_db
+# 4. Run Prisma migrations
+npx prisma migrate dev --name init
+# 5. Seed database (plants, default users)
+npx prisma db seed
+# 6. Start development server
+npm run dev
+
+34. Deployment Guide (Docker + Nginx)
+Dockerfile:
+dockerfile
+
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+RUN npx prisma generate
+
+EXPOSE 5000
+CMD ["node", "server.js"]
+
+docker-compose.yml:
+yaml
+
+version: '3.8'
+services:
+postgres:
+image: postgres:15
+environment:
+POSTGRES_DB: ipak_db
+POSTGRES_USER: ipak_user
+POSTGRES_PASSWORD: secure_password
+volumes:
+- postgres_data:/var/lib/postgresql/data
+ports:
+- "5432:5432"
+redis:
+image: redis:alpine
+ports:
+- "6379:6379"
+backend:
+build: .
+environment:
+DATABASE_URL: postgresql://ipak_user:secure_password@postgres:5432/ipak_db
+REDIS_URL: redis://redis:6379
+ports:
+- "5000:5000"
+depends_on:
+- postgres
+- redis
+nginx:
+image: nginx:alpine
+volumes:
+
+- ./nginx.conf:/etc/nginx/nginx.conf
+- ./frontend-build:/usr/share/nginx/html
+ports:
+- "80:80"
+- "443:443"
+depends_on:
+- backend
+volumes:
+postgres_data:
+
+35. Backup & Restore
+Backup PostgreSQL:
+bash
+
+pg_dump -U ipak_user ipak_db > backup_$(date +%Y%m%d).sql
+
+Restore:
+bash
+
+psql -U ipak_user ipak_db < backup_20260725.sql
+
+Automated: Cron job daily backup + AWS S3 upload.
+
+36. Known Limitations
+1.
+2.
+3.
+4.
+5.
+
+Admin cannot set user passwords (users set via invite link).
+No realtime WebSocket subscriptions.
+No email/SMS notifications wired.
+Reports "Export" button currently decorative (future enhancement).
+Plant entity unused (static config used).
+
+6. No server-side caching implemented yet (Redis available but not wired).
+
+37. Future Enhancements
+1.
+2.
+3.
+4.
+5.
+6.
+7.
+
+Real WebSocket for live dashboard updates.
+Email/SMS notifications for target misses and shift summaries.
+Report exports (PDF/Excel) for all report types.
+Mobile native push notifications.
+Dynamic plant CRUD from database.
+Multi-step approval workflows.
+Server-side aggregation for massive datasets (materialized views).
+
+38. Complete Business Rules
+#
+BR01
+BR02
+BR03
+BR04
+BR05
+
+Rule
+A production entry's section is derived from the selected machine.
+
+Waste % is always waste/production * 100; it is stored on the record and recomputed in reports.
+
+Downtime reason is mandatory iff downtime_minutes > 0.
+
+number_of_settings is captured only for Slitter and is required (≥ 0).
+
+number_of_cycles is captured only for Metallizer (optional).
+
+#
+BR06
+BR07
+BR08
+BR09
+BR10
+
+Rule
+Targets are Slitter-only and shift-wise.
+
+Achievement % uses actual production for the same date + machine + shift.
+
+Dispatch type is Export or Local; customer name is optional.
+
+Packing cost per-ton = total cost / total production; group total re-divides sums.
+
+Only Active film codes and downtime reasons appear in production entry selects.
+
+BR-
+
+Plant scoping: all production, target, dispatch, export reads filter by plant_name; Packing Cost is al
+
+11
+
+plants.
+
+BR12
+BR13
+BR14
+BR15
+BR16
+
+Dashboard This Month = [month-start, today]; Yesterday = previous calendar day.
+
+Waste badge red when waste% > 5, else green.
+
+Achievement badge green ≥ 100%, orange otherwise, N/A when target ≤ 0.
+
+New master records default to Active; status can be toggled.
+
+User creation uses platform invite (email link); admin assigns role + access.
+
+#
+
+Rule
+
+BR-
+
+Operators cannot see Reports or Analytics (navigation-gated).
+
+17
+BR-
+
+Only admins see Masters, User Management, Permissions, Audit Logs.
+
+18
+BR-
+
+Dispatch/Export/Packing add requires admin/supervisor/manager; delete requires admin/manage
+
+19
+
+Packing export requires admin/manager.
+
+BR-
+
+Bulk import resolves machine/film/downtime by case-insensitive name match and rejects invalid
+
+20
+
+rows.
+
+39. Complete Data Flow
+text
+
+[User Input]
+↓
+[Flutter/React Frontend]
+↓
+[REST API (Node.js + Express)]
+↓
+[Service Layer (Business Logic)]
+↓
+[Prisma ORM]
+↓
+[PostgreSQL Database]
+↓
+[Audit Log Middleware]
+
+40. Screen-by-Screen User Manual
+(Same as original SRS — 15 screens with detailed steps)
+
+41. Administrator Manual
+(Same as original — User Lifecycle, Master Data, Monitoring, Exports)
+
+42. Technical Notes
+
+
+
+
+
+ES Modules — Use import/export (package.json "type": "module").
+Prisma — Type-safe database queries.
+Flutter — Use flutter_echarts for diverse charts.
+Theming — Dynamic per-plant colors stored in plants table.
+
+43. Assumptions
+1.
+2.
+3.
+4.
+5.
+
+PostgreSQL 15+ installed.
+Node.js 18+ installed.
+Timezone: Asia/Karachi.
+Up to 500,000 records initially; scaling via indexing/partitioning.
+Operators are trusted; no approval needed.
+
+44. Appendix
+Plant Color Reference:
+
+Plant
+
+Code
+
+Color
+
+Light
+
+Dark
+
+Text
+
+IPAK
+
+IPK
+
+#16a34a
+
+#dcfce7
+
+#15803d
+
+#166534
+
+CPAK
+
+CPK
+
+#dc2626
+
+#fee2e2
+
+#b91c1c
+
+#991b1b
+
+GPAK
+
+GPK
+
+#2563eb
+
+#dbeafe
+
+#1d4ed8
+
+#1e40af
+
+PETPAK
+
+PPK
+
+#ea580c
+
+#fed7aa
+
+#c2410c
+
+#9a3412
+
+Chart Types Used (ECharts/fl_chart):
+Tab
+
+Chart Type
+
+Production
+
+Stacked Area
+
+Production vs Waste
+
+Dual Area
+
+Waste
+
+Donut + Treemap
+
+Downtime
+
+Heatmap + Gauge
+
+Target vs Actual
+
+Grouped Bar + Radial Gauge
+
+Film-wise
+
+Sunburst + Pie
+
+Machine-wise
+
+Bar Chart Race
+
+Slitter Settings
+
+Scatter Plot
+
+Metallizer Cycles
+
+Histogram
+
+UI Components (Stripe/Apple-inspired):
+
+
+
+
+
+
+Glassmorphism Cards: backdrop-filter: blur(12px) with semi-transparent
+backgrounds.
+Neumorphism Buttons: Soft shadows (box-shadow: 6px 6px 12px #d1d1d1, -6px 6px 12px #ffffff).
+Typography: Inter font (Apple SF Pro alternative), 14-24px sizes.
+Animations: Fade, slide, scale, ripple effects.
+
+End of Document
+
+

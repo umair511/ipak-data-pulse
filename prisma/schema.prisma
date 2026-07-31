@@ -1,0 +1,231 @@
+// SHOGO:CUSTOM-START prisma-header
+// Managed by Shogo. Do not add a datasource `url` or change the generator `provider` — the database URL is configured in prisma.config.ts (Prisma 7+).
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+// SHOGO:CUSTOM-END
+
+model User {
+  id             String   @id @default(cuid())
+  username       String   @unique
+  email          String?
+  name           String?
+  role           String   @default("operator")
+  password       String   @default("")
+  plainPassword  String   @default("")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  auditLogs      AuditLog[]
+  permissions    UserPermission[]
+  plants         UserPlant[]
+
+  @@map("users")
+}
+
+model Machine {
+  id          String   @id @default(cuid())
+  machineName String   @map("machine_name")
+  plantId     String   @map("plant_id")
+  plantName   String   @map("plant_name")
+  section     String
+  status      String   @default("Active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  productionEntries ProductionEntry[]
+  targets           Target[]
+
+  @@map("machines")
+}
+
+model FilmCode {
+  id           String   @id @default(cuid())
+  filmCodeName String   @map("film_code_name")
+  status       String   @default("Active")
+  description  String?
+  plantId      String?  @map("plant_id")
+  plantName    String?  @map("plant_name")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  productionEntries ProductionEntry[]
+  exportQuantities  ExportQuantity[]
+  dispatches        Dispatch[]
+
+  @@map("film_codes")
+}
+
+model DowntimeReason {
+  id           String   @id @default(cuid())
+  reasonLabel  String   @map("reason_label")
+  status       String   @default("Active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  productionEntries ProductionEntry[]
+
+  @@map("downtime_reasons")
+}
+
+model ProductionEntry {
+  id                  String   @id @default(cuid())
+  entryDate           String   @map("entry_date")
+  shift               String
+  plantId             String   @map("plant_id")
+  plantName           String   @map("plant_name")
+  section             String
+  machineId           String?  @map("machine_id")
+  machineName         String   @map("machine_name")
+  filmCodeId          String?  @map("film_code_id")
+  filmCodeName        String   @map("film_code_name")
+  productionTons      Float    @map("production_tons")
+  wasteTons           Float    @map("waste_tons")
+  wastePercent        Float?   @map("waste_percent")
+  downtimeMinutes     Float    @default(0) @map("downtime_minutes")
+  downtimeReasonId    String?  @map("downtime_reason_id")
+  downtimeReasonLabel String?  @map("downtime_reason_label")
+  numberOfSettings    Int?     @map("number_of_settings")
+  numberOfCycles      Int?     @map("number_of_cycles")
+  createdByName       String?  @map("created_by_name")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  machine        Machine?        @relation(fields: [machineId], references: [id])
+  filmCode       FilmCode?       @relation(fields: [filmCodeId], references: [id])
+  downtimeReason DowntimeReason? @relation(fields: [downtimeReasonId], references: [id])
+
+  @@map("production_entries")
+}
+
+model Target {
+  id               String   @id @default(cuid())
+  targetDate       String   @map("target_date")
+  shift            String
+  plantId          String   @map("plant_id")
+  plantName        String   @map("plant_name")
+  machineId        String?  @map("machine_id")
+  machineName      String   @map("machine_name")
+  dailyTargetTons  Float    @map("daily_target_tons")
+  createdByName    String?  @map("created_by_name")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  machine Machine? @relation(fields: [machineId], references: [id])
+
+  @@map("targets")
+}
+
+model ExportQuantity {
+  id                  String   @id @default(cuid())
+  exportDate          String   @map("export_date")
+  plantId             String   @map("plant_id")
+  plantName           String   @map("plant_name")
+  filmCodeId          String?  @map("film_code_id")
+  filmCodeName        String   @map("film_code_name")
+  exportQuantityTons  Float    @map("export_quantity_tons")
+  createdByName       String?  @map("created_by_name")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  filmCode FilmCode? @relation(fields: [filmCodeId], references: [id])
+
+  @@map("export_quantities")
+}
+
+model PackingCost {
+  id                   String   @id @default(cuid())
+  costMonth            String   @map("cost_month")
+  plantId              String   @map("plant_id")
+  plantName            String   @map("plant_name")
+  totalProductionTons  Float    @map("total_production_tons")
+  totalCostRs          Float    @map("total_cost_rs")
+  bomTotalCostRs       Float    @map("bom_total_cost_rs")
+  actualTotalCostRs    Float    @map("actual_total_cost_rs")
+  bomPackingCost       Float?   @map("bom_packing_cost")
+  actualPackingCost    Float?   @map("actual_packing_cost")
+  createdByName        String?  @map("created_by_name")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@map("packing_costs")
+}
+
+model Customer {
+  id         String   @id @default(cuid())
+  name       String
+  plantId    String?  @map("plant_id")
+  plantName  String?  @map("plant_name")
+  status     String   @default("Active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([name, plantName])
+  @@map("customers")
+}
+
+model Dispatch {
+  id             String   @id @default(cuid())
+  dispatchDate   String   @map("dispatch_date")
+  customerName   String   @map("customer_name")
+  filmCodeId     String?  @map("film_code_id")
+  filmCodeName   String   @map("film_code_name")
+  quantityTons   Float    @map("quantity_tons")
+  dispatchType   String   @map("dispatch_type")
+  plantId        String   @map("plant_id")
+  plantName      String   @map("plant_name")
+  vehicleNumber  String?  @map("vehicle_number")
+  createdByName  String?  @map("created_by_name")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  filmCode FilmCode? @relation(fields: [filmCodeId], references: [id])
+
+  @@map("dispatches")
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  userName     String   @map("user_name")
+  action       String
+  module       String
+  reportName   String?  @map("report_name")
+  exportFormat String?  @map("export_format")
+  details      String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model UserPermission {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  permission String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, permission])
+  @@map("user_permissions")
+}
+
+model UserPlant {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  plantId   String   @map("plant_id")
+  plantName String   @map("plant_name")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, plantId])
+  @@map("user_plants")
+}
