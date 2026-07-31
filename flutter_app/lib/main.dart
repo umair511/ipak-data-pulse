@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'services/api_service.dart';
@@ -55,6 +56,9 @@ class AppState extends ChangeNotifier {
   List<String> permissions = [];
   List<Map<String, dynamic>> assignedPlants = [];
 
+  // New: lastReportParams used for navigating from Dashboard -> Reports
+  Map<String, String>? lastReportParams;
+
   Future<void> init() async {
     isLoggedIn = await api.isLoggedIn();
     if (isLoggedIn) {
@@ -103,6 +107,7 @@ class AppState extends ChangeNotifier {
     permissions = [];
     assignedPlants = [];
     currentRoute = 'dashboard';
+    lastReportParams = null;
     notifyListeners();
   }
 
@@ -114,6 +119,14 @@ class AppState extends ChangeNotifier {
 
   void navigateTo(String route) {
     currentRoute = route;
+    // clear any previous params
+    lastReportParams = null;
+    notifyListeners();
+  }
+
+  void navigateToWithParams(String route, Map<String, String> params) {
+    currentRoute = route;
+    lastReportParams = params;
     notifyListeners();
   }
 
