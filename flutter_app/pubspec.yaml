@@ -16,6 +16,8 @@ dependencies:
   fl_chart: ^0.68.0
   cupertino_icons: ^1.0.6
   flutter_secure_storage: ^9.0.0
+  excel: ^2.0.2
+  file_picker: ^5.2.5
 
 dev_dependencies:
   flutter_test:
